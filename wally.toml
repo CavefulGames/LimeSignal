@@ -1,10 +1,10 @@
 [package]
-name = "data-oriented-house/lemonsignal"
+name = "caveful-games/limesignal"
 version = "1.10.0"
 registry = "https://github.com/UpliftGames/wally-index"
 licence = "MIT"
 authors = ["Aspecky", "Sona"]
-description = "A pure Luau signal implementation faster than most other implementations in Roblox."
+description = "A fork of LemonSignal with some unneeded features removed and the BindableEvent feature added."
 realm = "shared"
 exclude = ["**"]
 include = [

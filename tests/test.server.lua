@@ -1,3 +1,3 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LemonSignal = require(ReplicatedStorage.LemonSignal)
-local sig = LemonSignal.new()
+local LimeSignal = require(ReplicatedStorage.LimeSignal)
+local sig = LimeSignal.new()
