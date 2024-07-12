@@ -4,7 +4,7 @@
         "$className": "DataModel",
         "ReplicatedStorage": {
             "$ignoreUnknownInstances": true,
-            "LimeSignal": {
+            "BindableLemon": {
                 "$path": "default.project.json"
             }
         },

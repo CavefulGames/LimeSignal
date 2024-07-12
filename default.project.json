@@ -1,6 +1,6 @@
 {
-    "name": "LimeSignal",
+    "name": "BindableLemon",
     "tree": {
-        "$path": "src/LimeSignal.lua"
+        "$path": "src"
     }
 }
