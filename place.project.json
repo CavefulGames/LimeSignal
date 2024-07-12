@@ -1,18 +1,21 @@
 {
-    "name": "project",
-    "tree": {
-        "$className": "DataModel",
-        "ReplicatedStorage": {
-            "$ignoreUnknownInstances": true,
-            "BindableLemon": {
-                "$path": "default.project.json"
-            }
-        },
-        "ServerScriptService": {
-            "$ignoreUnknownInstances": true,
-            "tests": {
-                "$path": "tests"
-            }
-        }
-    }
+	"name": "project",
+	"tree": {
+		"$className": "DataModel",
+		"ReplicatedStorage": {
+			"$ignoreUnknownInstances": true,
+			"Packages": {
+				"$path": "Packages",
+				"BindableLemon": {
+					"$path": "default.project.json"
+				}
+			}
+		},
+		"ServerScriptService": {
+			"$ignoreUnknownInstances": true,
+			"tests": {
+				"$path": "tests"
+			}
+		}
+	}
 }

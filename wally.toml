@@ -10,10 +10,9 @@ exclude = ["**"]
 include = [
     "default.project.json",
     "src",
-    "src/**",
     "LICENSE",
     "wally.toml",
 ]
 
 [dependencies]
-threadpool = "caveful-games/threadpool@^0.1.0"
+threadpool = "caveful-games/threadpool@0.1.1"

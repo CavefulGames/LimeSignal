@@ -2,7 +2,10 @@
 --!strict
 --!native
 
---- $Types
+--$Packages
+local ThreadPool = require(script.Parent.threadpool)
+
+--$Types
 export type Connection<U...> = typeof(setmetatable(
 	{} :: {
 		connected: boolean,
@@ -108,7 +111,7 @@ function reconnect<U...>(self: Connection<U...>)
 end
 Connection.reconnect = reconnect
 
---- $BindableLemon
+--$BindableLemon
 local BindableLemon = {} :: BindableLemonImpl
 BindableLemon.__index = BindableLemon
 
@@ -165,17 +168,20 @@ Signal.wait = wait
 local function fire<T...>(self: BindableLemon<T...>, ...: T...)
 	local cn = self.event._head
 	while cn do
-		local thread
-		if #freeThreads > 0 then
-			thread = freeThreads[#freeThreads]
-			freeThreads[#freeThreads] = nil
-		else
-			thread = coroutine.create(yielder)
-			coroutine.resume(thread)
-		end
+		-- local thread
+		-- if #freeThreads > 0 then
+		-- 	thread = freeThreads[#freeThreads]
+		-- 	freeThreads[#freeThreads] = nil
+		-- else
+		-- 	thread = coroutine.create(yielder)
+		-- 	coroutine.resume(thread)
+		-- end
 
-		task.spawn(thread, cn._fn, thread, ...)
+		-- task.spawn(thread, cn._fn, thread, ...)
+		
+		-- now we spawn in shared threadpool!
 
+		ThreadPool.spawn(cn._fn, ...)
 		cn = cn._next
 	end
 end
