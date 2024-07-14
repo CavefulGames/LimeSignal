@@ -3,17 +3,10 @@
 
 # 사용 예시
 ```lua
-local events = BindableLemon.createEventStore() :: {
-	onSomething: BindableLemon.BindableLemon<number>
-}
+local bindable = BindableLemon.new()
 
-function module.new()
-	local self = setmetatble({}, module)
-	events(self).onSomething = BindableLemon.new()
-	return self
-end
+bindable.event:connect(function()
+end)
 
-function module.something(self)
-	events(self).onSomething:fire()
-end
+bindable:fire()
 ```
