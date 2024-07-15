@@ -26,6 +26,7 @@ type ConnectionImpl = {
 export type Event<T...> = typeof(setmetatable(
 	{} :: {
 		_head: any,
+		-- _emitter: <T...>(event: any, T...) -> () -- i just want to hide it forever :)
 	},
 	{} :: EventImpl
 ))
@@ -74,6 +75,7 @@ type SignalImpl = {
 	fire: <T6...>(self: Signal<T6...>, T6...) -> (),
 	Destroy: <T3...>(self: Signal<T3...>) -> (),
 	createEmitter: () -> (<T...>(event: Event<T...>, T...) -> ()),
+	Event: EventImpl,
 }
 
 local Connection = {} :: ConnectionImpl
@@ -224,6 +226,10 @@ end
 Signal.Destroy = Destroy
 Bindable.Destroy = Destroy :: any
 
+function Event.from(emitter)
+	return setmetatable({ _emitter = emitter, _head = false }, Event)
+end
+
 function Bindable.new()
 	local event = setmetatable({ _head = false }, Event)
 	return setmetatable({ event = event }, Bindable)
@@ -248,5 +254,17 @@ function Signal.wrap(signal)
 	end)
 	return wrapper
 end
+
+function Signal.createEmitter()
+	local function emitter(event, ...)
+		if not event._emitter or event._emitter ~= emitter then
+			error("Emitted an invalid event")
+		end
+		fire(event, ...)
+	end
+	return emitter :: any
+end
+
+Signal.Event = Event
 
 return Signal
