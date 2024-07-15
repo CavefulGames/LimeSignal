@@ -23,49 +23,58 @@ type ConnectionImpl = {
 	reconnect: <U1...>(self: Connection<U1...>) -> (),
 }
 
+export type Event<T...> = typeof(setmetatable(
+	{} :: {
+		_head: any,
+	},
+	{} :: EventImpl
+))
+
+type EventImpl = {
+	__index: EventImpl,
+	connect: <T0..., U0...>(self: Event<T0...>, fn: (U0...) -> ()) -> Connection<U0...>,
+	connectOnce: <T1..., U1...>(self: Event<T1...>, fn: (U1...) -> ()) -> Connection<U1...>,
+	disconnectAll: <T2...>(self: Event<T2...>) -> (),
+	wait: <T3...>(self: Event<T3...>) -> T3...,
+	from: <T4...>(emitter: <T...>(event: Event<T...>, T...) -> ()) -> (Event<T4...>)
+}
+
+export type Bindable<T...> = typeof(setmetatable(
+	{} :: {
+		RBXScriptConnection: RBXScriptConnection?,
+		event: Event<T...>
+	},
+	{} :: BindableImpl
+))
+
+type BindableImpl = {
+	__index: BindableImpl,
+	new: <T0...>() -> (Bindable<T0...>),
+	wrap: <T1...>(signal: RBXScriptSignal<T1...>) -> (Bindable<T1...>),
+	fire: <T2...>(self: Bindable<T2...>, T2...) -> (),
+	Destroy: <T3...>(self: Bindable<T3...>) -> (), -- why PascalCase? because it does call Destroy method on RBXScriptConnection if it exists
+}
+
 export type Signal<T...> = typeof(setmetatable(
 	{} :: {
 		_head: any,
+		RBXScriptConnection: RBXScriptConnection?
 	},
 	{} :: SignalImpl
 ))
 
 type SignalImpl = {
 	__index: SignalImpl,
+	new: <T0...>() -> (Signal<T0...>),
+	wrap: <T1...>(signal: RBXScriptSignal<T1...>) -> (Signal<T1...>),
 	connect: <T2..., U2...>(self: Signal<T2...>, fn: (U2...) -> ()) -> Connection<U2...>,
-	connectOnce: <T4..., U4...>(self: Signal<T4...>, fn: (U4...) -> ()) -> Connection<U4...>,
-	disconnectAll: <T8...>(self: Signal<T8...>) -> (),
-	wait: <T6...>(self: Signal<T6...>) -> T6...,
+	connectOnce: <T3..., U3...>(self: Signal<T3...>, fn: (U3...) -> ()) -> Connection<U3...>,
+	disconnectAll: <T4...>(self: Signal<T4...>) -> (),
+	wait: <T5...>(self: Signal<T5...>) -> T5...,
+	fire: <T6...>(self: Signal<T6...>, T6...) -> (),
+	Destroy: <T3...>(self: Signal<T3...>) -> (),
+	createEmitter: () -> (<T...>(event: Event<T...>, T...) -> ()),
 }
-
-export type BindableLemon<T...> = typeof(setmetatable(
-	{} :: {
-		RBXScriptConnection: RBXScriptConnection?,
-		event: Signal<T...>
-	},
-	{} :: BindableLemonImpl
-))
-
-type BindableLemonImpl = {
-	__index: BindableLemonImpl,
-	new: <T0...>() -> (BindableLemon<T0...>),
-	wrap: <T1...>(signal: RBXScriptSignal<T1...>) -> (BindableLemon<T1...>),
-	fire: <T7...>(self: BindableLemon<T7...>, T7...) -> (),
-	Destroy: <T10...>(self: BindableLemon<T10...>) -> (), -- why PascalCase? because it does call Destroy method on RBXScriptConnection if it exists
-}
-
-local freeThreads: { thread } = {}
-
-local function runCallback(callback, thread, ...)
-	callback(...)
-	table.insert(freeThreads, thread)
-end
-
-local function yielder()
-	while true do
-		runCallback(coroutine.yield())
-	end
-end
 
 local Connection = {} :: ConnectionImpl
 Connection.__index = Connection
@@ -111,9 +120,12 @@ function reconnect<U...>(self: Connection<U...>)
 end
 Connection.reconnect = reconnect
 
---$BindableLemon
-local BindableLemon = {} :: BindableLemonImpl
-BindableLemon.__index = BindableLemon
+--$Lime
+local Bindable = {} :: BindableImpl
+Bindable.__index = Bindable
+
+local Event = {} :: EventImpl
+Event.__index = Event
 
 local Signal = {} :: SignalImpl
 Signal.__index = Signal
@@ -125,7 +137,7 @@ local rbxConnect, rbxDisconnect do
 	bindable:Destroy()
 end
 
-local function connect<T..., U...>(self: Signal<T...>, fn: (U...) -> ())
+local function connect<T..., U...>(self, fn)
 	local head = self._head
 	local cn = setmetatable({
 		connected = true,
@@ -143,18 +155,20 @@ local function connect<T..., U...>(self: Signal<T...>, fn: (U...) -> ())
 	return cn :: any
 end
 Signal.connect = connect
+Event.connect = connect :: any
 
-local function once<T..., U...>(self: Signal<T...>, fn: (U...) -> ())
+local function once<T..., U...>(self, fn)
 	local cn
-	cn = connect(self, function(...)
+	cn = connect(self, function(...: any)
 		disconnect(cn)
 		fn(...)
 	end)
 	return cn
 end
 Signal.connectOnce = once
+Event.connectOnce = once :: any
 
-local function wait<T...>(self: Signal<T...>): T...
+local function wait<T...>(self): T...
 	local thread = coroutine.running()
 	local cn
 	cn = connect(self, function(...)
@@ -164,9 +178,11 @@ local function wait<T...>(self: Signal<T...>): T...
 	return coroutine.yield()
 end
 Signal.wait = wait
+Event.wait = wait :: any
 
-local function fire<T...>(self: BindableLemon<T...>, ...: T...)
-	local cn = self.event._head
+local function fire<T...>(self, ...)
+	local event = (self :: any).event or self
+	local cn = event._head
 	while cn do
 		-- local thread
 		-- if #freeThreads > 0 then
@@ -178,44 +194,59 @@ local function fire<T...>(self: BindableLemon<T...>, ...: T...)
 		-- end
 
 		-- task.spawn(thread, cn._fn, thread, ...)
-		
+
 		-- now we spawn in shared threadpool!
 
 		ThreadPool.spawn(cn._fn, ...)
 		cn = cn._next
 	end
 end
-BindableLemon.fire = fire :: any
+Signal.fire = fire
+Bindable.fire = fire :: any
 
-local function disconnectAll<T...>(self: Signal<T...>)
+local function disconnectAll<T...>(self)
 	local cn = self._head
 	while cn do
 		disconnect(cn)
 		cn = cn._next
 	end
 end
-Signal.disconnectAll = disconnectAll
+Event.disconnectAll = disconnectAll
 
-local function Destroy<T...>(self: BindableLemon<T...>)
-	disconnectAll(self.event)
+local function Destroy<T...>(self)
+	disconnectAll((self :: any).event or self)
 	local cn = self.RBXScriptConnection
 	if cn then
 		rbxDisconnect(cn)
-		self.RBXScriptConnection = nil
+		self.RBXScriptConnection = nil :: any
 	end
 end
-BindableLemon.Destroy = Destroy :: any
+Signal.Destroy = Destroy
+Bindable.Destroy = Destroy :: any
 
-function BindableLemon.new<T...>(): BindableLemon<T...>
-	return setmetatable({ event = setmetatable({ _head = false }, Signal) }, BindableLemon)
+function Bindable.new()
+	local event = setmetatable({ _head = false }, Event)
+	return setmetatable({ event = event }, Bindable)
 end
 
-function BindableLemon.wrap<T...>(signal: RBXScriptSignal<T...>): BindableLemon<T...>
-	local wrapper = BindableLemon.new()
+function Bindable.wrap(signal)
+	local wrapper = Bindable.new()
+	wrapper.RBXScriptConnection = rbxConnect(signal, function(...)
+		fire(wrapper :: any, ...)
+	end)
+	return wrapper
+end
+
+function Signal.new()
+	return setmetatable({ _head = false }, Signal)
+end
+
+function Signal.wrap(signal)
+	local wrapper = Signal.new()
 	wrapper.RBXScriptConnection = rbxConnect(signal, function(...)
 		fire(wrapper, ...)
 	end)
 	return wrapper
 end
 
-return BindableLemon
+return Signal
