@@ -6,89 +6,55 @@
 local ThreadPool = require(script.Parent.threadpool)
 
 --$Types
-export type Connection<U...> = typeof(setmetatable(
-	{} :: {
-		connected: boolean,
-		_signal: any,
-		_fn: () -> (),
-		_next: any,
-		_prev: any
-	},
-	{} :: ConnectionImpl
-))
-
-type ConnectionImpl = {
-	__index: ConnectionImpl,
-	disconnect: <U0...>(self: Connection<U0...>) -> (),
-	reconnect: <U1...>(self: Connection<U1...>) -> (),
+export type Connection<T...> = {
+	disconnect: (self: Connection<T...>) -> (),
+	reconnect: (self: Connection<T...>) -> (),
+	connected: boolean,
 }
 
-export type Event<T...> = typeof(setmetatable(
-	{} :: {
-		-- _head: any,
-		-- _emitter: <T...>(event: any, T...) -> () -- i just wanted to hide them forever :)
-	},
-	{} :: EventImpl
-))
-
-type EventImpl = {
-	__index: EventImpl,
-	connect: <T0..., U0...>(self: Event<T0...>, fn: (U0...) -> ()) -> Connection<U0...>,
-	connectOnce: <T1..., U1...>(self: Event<T1...>, fn: (U1...) -> ()) -> Connection<U1...>,
-	disconnectAll: <T2...>(self: Event<T2...>) -> (),
-	wait: <T3...>(self: Event<T3...>) -> T3...,
-	from: <T4...>(emitter: <T...>(event: Event<T...>, T...) -> ()) -> (Event<T4...>)
+export type Event<T...> = {
+	connect: (self: Event<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	connectOnce: (self: Event<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	disconnectAll: (self: Event<T...>) -> (),
+	wait: (self: Event<T...>) -> T...,
+	from: (emitter: <U...>(event: Event<T...>, U...) -> ()) -> (Event<T...>)
 }
 
-export type Bindable<T...> = typeof(setmetatable(
-	{} :: {
-		RBXScriptConnection: RBXScriptConnection?,
-		event: Event<T...>
-	},
-	{} :: BindableImpl
-))
-
-type BindableImpl = {
-	__index: BindableImpl,
-	new: <T0...>() -> (Bindable<T0...>),
-	wrap: <T1...>(signal: RBXScriptSignal<T1...>) -> (Bindable<T1...>),
-	fire: <T2...>(self: Bindable<T2...>, T2...) -> (),
-	Destroy: <T3...>(self: Bindable<T3...>) -> (), -- why PascalCase? because it does call Destroy method on RBXScriptConnection if it exists
+export type Bindable<T...> = {
+	new: () -> (Bindable<T...>),
+	wrap: (signal: RBXScriptSignal<T...>) -> (Bindable<T...>),
+	fire: (self: Bindable<T...>, T...) -> (),
+	Destroy: (self: Bindable<T...>) -> (), -- why PascalCase? because it does call Destroy method on RBXScriptConnection if it exists
+	RBXScriptConnection: RBXScriptConnection?,
+	event: Event<T...>,
 }
 
-export type Signal<T...> = typeof(setmetatable(
-	{} :: {
-		-- _head: any,
-		RBXScriptConnection: RBXScriptConnection?
-	},
-	{} :: SignalImpl
-))
-
-type SignalImpl = {
-	__index: SignalImpl,
-	new: <T0...>() -> (Signal<T0...>),
-	wrap: <T1...>(signal: RBXScriptSignal<T1...>) -> (Signal<T1...>),
-	connect: <T2..., U2...>(self: Signal<T2...>, fn: (U2...) -> ()) -> Connection<U2...>,
-	connectOnce: <T3..., U3...>(self: Signal<T3...>, fn: (U3...) -> ()) -> Connection<U3...>,
-	disconnectAll: <T4...>(self: Signal<T4...>) -> (),
-	wait: <T5...>(self: Signal<T5...>) -> T5...,
-	fire: <T6...>(self: Signal<T6...>, T6...) -> (),
-	Destroy: <T3...>(self: Signal<T3...>) -> (),
+export type Signal<T...> = {
+	new: () -> (Signal<T...>),
+	wrap: (signal: RBXScriptSignal<T...>) -> (Signal<T...>),
+	connect: (self: Signal<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	connectOnce: (self: Signal<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	disconnectAll: (self: Signal<T...>) -> (),
+	wait: (self: Signal<T...>) -> T...,
+	fire: (self: Signal<T...>, T...) -> (),
+	Destroy: (self: Signal<T...>) -> (),
 	createEmitter: () -> (<T...>(event: Event<T...>, T...) -> ()),
-	Event: EventImpl,
+	Event: Event<...any>,
+	Bindable: Bindable<...any>,
+	RBXScriptConnection: RBXScriptConnection?
 }
 
-local Connection = {} :: ConnectionImpl
-Connection.__index = Connection
+local Connection = {} :: Connection<...any>
+(Connection :: any).__index = Connection
 
-local function disconnect<U...>(self: Connection<U...>)
+local function disconnect(self)
 	if not self.connected then
 		return
 	end
 	self.connected = false
 
-	local next = self._next
-	local prev = self._prev
+	local next = (self :: any)._next
+	local prev = (self :: any)._prev
 
 	if next then
 		next._prev = prev
@@ -97,40 +63,40 @@ local function disconnect<U...>(self: Connection<U...>)
 		prev._next = next
 	end
 
-	local signal = self._signal
+	local signal = (self :: any)._signal
 	if signal._head == self then
 		signal._head = next
 	end
 end
 Connection.disconnect = disconnect -- i know this is annoying but this is only for micro optimization
 
-function reconnect<U...>(self: Connection<U...>)
+function reconnect(self)
 	if self.connected then
 		return
 	end
 	self.connected = true
 
-	local signal = self._signal
+	local signal = (self :: any)._signal
 	local head = signal._head
 	if head then
 		head._prev = self
 	end
 	signal._head = self
 
-	self._next = head
-	self._prev = false
+	;(self :: any)._next = head
+	;(self :: any)._prev = false
 end
 Connection.reconnect = reconnect
 
 --$Lime
-local Bindable = {} :: BindableImpl
-Bindable.__index = Bindable
+local Bindable = {} :: Bindable<...any>
+(Bindable :: any).__index = Bindable
 
-local Event = {} :: EventImpl
-Event.__index = Event
+local Event = {} :: Event<...any>
+(Event :: any).__index = Event
 
-local Signal = {} :: SignalImpl
-Signal.__index = Signal
+local Signal = {} :: Signal<...any>
+(Signal :: any).__index = Signal
 
 local rbxConnect, rbxDisconnect do
 	local bindable = Instance.new("BindableEvent")
@@ -139,7 +105,7 @@ local rbxConnect, rbxDisconnect do
 	bindable:Destroy()
 end
 
-local function connect<T..., U...>(self, fn)
+local function connect<T...>(self, fn)
 	local head = (self :: any)._head
 	local cn = setmetatable({
 		connected = true,
@@ -159,7 +125,7 @@ end
 Signal.connect = connect
 Event.connect = connect :: any
 
-local function once<T..., U...>(self, fn)
+local function once<T...>(self, fn)
 	local cn
 	cn = connect(self, function(...: any)
 		disconnect(cn)
@@ -227,7 +193,7 @@ Signal.Destroy = Destroy
 Bindable.Destroy = Destroy :: any
 
 function Event.from(emitter)
-	return setmetatable({ _emitter = emitter, _head = false }, Event)
+	return setmetatable({ _emitter = emitter, _head = false }, Event) :: any
 end
 
 function Bindable.new()
@@ -244,7 +210,7 @@ function Bindable.wrap(signal)
 end
 
 function Signal.new()
-	return setmetatable({ _head = false }, Signal)
+	return setmetatable({ _head = false }, Signal) :: any
 end
 
 function Signal.wrap(signal)
@@ -266,5 +232,6 @@ function Signal.createEmitter()
 end
 
 Signal.Event = Event
+Signal.Bindable = Bindable
 
 return Signal
