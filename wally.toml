@@ -1,10 +1,10 @@
 [package]
 name = "caveful-games/limesignal"
-version = "0.1.0"
+version = "0.1.2"
 registry = "https://github.com/UpliftGames/wally-index"
-licence = "MIT"
+license = "MIT"
 authors = ["jiwonz"]
-description = "A fork of LemonSignal but based on roblox's BindableEvent"
+description = "A fork of LemonSignal with additional features added"
 realm = "shared"
 exclude = ["**"]
 include = [
@@ -15,4 +15,4 @@ include = [
 ]
 
 [dependencies]
-threadpool = "caveful-games/threadpool@0.1.1"
+threadpool = "caveful-games/threadpool@0.1.3"
