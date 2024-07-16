@@ -25,8 +25,8 @@ type ConnectionImpl = {
 
 export type Event<T...> = typeof(setmetatable(
 	{} :: {
-		_head: any,
-		-- _emitter: <T...>(event: any, T...) -> () -- i just want to hide it forever :)
+		-- _head: any,
+		-- _emitter: <T...>(event: any, T...) -> () -- i just wanted to hide them forever :)
 	},
 	{} :: EventImpl
 ))
@@ -58,7 +58,7 @@ type BindableImpl = {
 
 export type Signal<T...> = typeof(setmetatable(
 	{} :: {
-		_head: any,
+		-- _head: any,
 		RBXScriptConnection: RBXScriptConnection?
 	},
 	{} :: SignalImpl
@@ -140,7 +140,7 @@ local rbxConnect, rbxDisconnect do
 end
 
 local function connect<T..., U...>(self, fn)
-	local head = self._head
+	local head = (self :: any)._head
 	local cn = setmetatable({
 		connected = true,
 		_signal = self,
@@ -152,7 +152,7 @@ local function connect<T..., U...>(self, fn)
 	if head then
 		head._prev = cn
 	end
-	self._head = cn :: any
+	(self :: any)._head = cn :: any
 
 	return cn :: any
 end
@@ -207,7 +207,7 @@ Signal.fire = fire
 Bindable.fire = fire :: any
 
 local function disconnectAll<T...>(self)
-	local cn = self._head
+	local cn = (self :: any)._head
 	while cn do
 		disconnect(cn)
 		cn = cn._next
@@ -232,7 +232,7 @@ end
 
 function Bindable.new()
 	local event = setmetatable({ _head = false }, Event)
-	return setmetatable({ event = event }, Bindable)
+	return setmetatable({ event = event }, Bindable) :: any
 end
 
 function Bindable.wrap(signal)
