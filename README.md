@@ -62,4 +62,6 @@ object.onSomething:connect(function(a, b) -- typed!
 end)
 
 object:something()
+
+object.onSomething:fire() -- no!
 ```
