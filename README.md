@@ -20,7 +20,7 @@ limesignal = "caveful-games/limesignal@x.x.x"
 local sig = LimeSignal.new()
 
 sig:connect(function()
-
+	-- do something
 end)
 
 sig:fire()
@@ -29,6 +29,7 @@ sig:fire()
 ### 바인더블
 ```lua
 -- API inspired by roblox's BindableEvent instance
+
 local bindable = LimeSignal.Bindable.new()
 
 bindable.event:connect(function()
@@ -37,8 +38,10 @@ end)
 
 bindable:fire()
 ```
-### 프라이빗 이벤트
+### 이벤트 & 이미터
 ```lua
+-- Useful when you want to make event's `fire` method into private!
+
 local Class = {}
 local emit = LimeSignal.createEmitter()
 
@@ -49,7 +52,7 @@ function Class.new()
 end
 
 function Class.something(self)
-	emit(self.onSomething, 123, "hi")
+	emit(self.onSomething, 123, "hi") -- ofc typed!
 end
 
 local object = Class.new()
