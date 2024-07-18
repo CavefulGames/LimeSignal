@@ -1,6 +1,6 @@
 [package]
 name = "caveful-games/limesignal"
-version = "0.1.2"
+version = "0.1.3"
 registry = "https://github.com/UpliftGames/wally-index"
 license = "MIT"
 authors = ["jiwonz"]
