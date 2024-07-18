@@ -38,9 +38,6 @@ export type Signal<T...> = {
 	wait: (self: Signal<T...>) -> T...,
 	fire: (self: Signal<T...>, T...) -> (),
 	Destroy: (self: Signal<T...>) -> (),
-	createEmitter: () -> (<T...>(event: Event<T...>, T...) -> ()),
-	Event: Event<...any>,
-	Bindable: Bindable<...any>,
 	RBXScriptConnection: RBXScriptConnection?
 }
 
@@ -221,7 +218,7 @@ function Signal.wrap(signal)
 	return wrapper
 end
 
-function Signal.createEmitter()
+local function createEmitter()
 	local function emitter(event, ...)
 		if not event._emitter or event._emitter ~= emitter then
 			error("Emitted an invalid event")
@@ -231,7 +228,9 @@ function Signal.createEmitter()
 	return emitter :: any
 end
 
-Signal.Event = Event
-Signal.Bindable = Bindable
-
-return Signal
+return {
+	Signal = Signal,
+	Event = Event,
+	Bindable = Bindable,
+	createEmitter = createEmitter
+}

@@ -8,7 +8,7 @@
 - 모든 클래스의 메소드, 속성은 camelCase입니다. 원래 `RBXScriptSignal`과 `Signal` 모듈들의 메소드가 PascalCase였다는 점에서 유의하세요.
 - 순수 luau 지원이 삭제되었습니다. (로블록스 전용)
 
-## 설치 (via Wally)
+## 설치 ([via Wally](https://wally.run/package/caveful-games/limesignal))
 `wally.toml`에 다음을 추가한 뒤 `wally install` 명령어를 실행해서 설치하세요.
 ```toml
 limesignal = "caveful-games/limesignal@x.x.x"
@@ -17,7 +17,7 @@ limesignal = "caveful-games/limesignal@x.x.x"
 ## 사용 예시
 ### 보통 시그널
 ```lua
-local sig = LimeSignal.new()
+local sig = LimeSignal.Signal.new()
 
 sig:connect(function()
 	-- do something
@@ -63,5 +63,5 @@ end)
 
 object:something()
 
-object.onSomething:fire() -- no!
+object.onSomething:fire() -- no you can't
 ```
