@@ -6,7 +6,7 @@
 			"$ignoreUnknownInstances": true,
 			"Packages": {
 				"$path": "Packages",
-				"LimeSignal": {
+				"limesignal": {
 					"$path": "default.project.json"
 				}
 			}
