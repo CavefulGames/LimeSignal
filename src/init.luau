@@ -17,7 +17,7 @@ export type Event<T...> = {
 	connectOnce: (self: Event<T...>, fn: (T...) -> ()) -> Connection<T...>,
 	disconnectAll: (self: Event<T...>) -> (),
 	wait: (self: Event<T...>) -> T...,
-	from: (emitter: <U...>(event: Event<T...>, U...) -> ()) -> (Event<T...>)
+	from: (emitter: (event: Event<T...>, T...) -> ()) -> (Event<T...>)
 }
 
 export type Bindable<T...> = {
@@ -218,7 +218,7 @@ function Signal.wrap(signal)
 	return wrapper
 end
 
-local function createEmitter()
+local function createEmitter(): <T...>(event: Event<T...>, T...) -> ()
 	local function emitter(event, ...)
 		if not event._emitter or event._emitter ~= emitter then
 			error("Emitted an invalid event")

@@ -12,7 +12,7 @@ end)
 
 emit(event, 1)
 
-local sig = LimeSignal.new() :: LimeSignal.Signal<string>
+local sig = LimeSignal.Signal.new() :: LimeSignal.Signal<string>
 
 sig:connect(function(a0)
 	print(a0)
