@@ -1,6 +1,6 @@
 [package]
 name = "caveful-games/limesignal"
-version = "0.1.5"
+version = "0.1.6"
 registry = "https://github.com/UpliftGames/wally-index"
 license = "MIT"
 authors = ["jiwonz"]
@@ -16,4 +16,4 @@ include = [
 ]
 
 [dependencies]
-threadpool = "caveful-games/threadpool@0.1.3"
+threadpool = "caveful-games/threadpool@0.1.4"
