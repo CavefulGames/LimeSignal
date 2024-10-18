@@ -2,10 +2,8 @@
 --!strict
 --!native
 
---$Packages
 local ThreadPool = require(script.Parent.threadpool)
 
---$Types
 export type Connection<T...> = {
 	disconnect: (self: Connection<T...>) -> (),
 	reconnect: (self: Connection<T...>) -> (),
@@ -17,12 +15,12 @@ export type Event<T...> = {
 	connectOnce: (self: Event<T...>, fn: (T...) -> ()) -> Connection<T...>,
 	disconnectAll: (self: Event<T...>) -> (),
 	wait: (self: Event<T...>) -> T...,
-	from: (emitter: (event: Event<T...>, T...) -> ()) -> (Event<T...>)
+	from: (emitter: (event: Event<T...>, T...) -> ()) -> Event<T...>,
 }
 
 export type Bindable<T...> = {
-	new: () -> (Bindable<T...>),
-	wrap: (signal: RBXScriptSignal<T...>) -> (Bindable<T...>),
+	new: () -> Bindable<T...>,
+	wrap: (signal: RBXScriptSignal<T...>) -> Bindable<T...>,
 	fire: (self: Bindable<T...>, T...) -> (),
 	Destroy: (self: Bindable<T...>) -> (), -- why PascalCase? because it does call Destroy method on RBXScriptConnection if it exists
 	RBXScriptConnection: RBXScriptConnection?,
@@ -30,18 +28,18 @@ export type Bindable<T...> = {
 }
 
 export type Signal<T...> = {
-	new: () -> (Signal<T...>),
-	wrap: (signal: RBXScriptSignal<T...>) -> (Signal<T...>),
+	new: () -> Signal<T...>,
+	wrap: (signal: RBXScriptSignal<T...>) -> Signal<T...>,
 	connect: (self: Signal<T...>, fn: (T...) -> ()) -> Connection<T...>,
 	connectOnce: (self: Signal<T...>, fn: (T...) -> ()) -> Connection<T...>,
 	disconnectAll: (self: Signal<T...>) -> (),
 	wait: (self: Signal<T...>) -> T...,
 	fire: (self: Signal<T...>, T...) -> (),
 	Destroy: (self: Signal<T...>) -> (),
-	RBXScriptConnection: RBXScriptConnection?
+	RBXScriptConnection: RBXScriptConnection?,
 }
 
-local Connection = {} :: Connection<...any>
+local Connection = {} :: Connection<...any>;
 (Connection :: any).__index = Connection
 
 local function disconnect(self)
@@ -79,23 +77,23 @@ function reconnect(self)
 		head._prev = self
 	end
 	signal._head = self
-
-	;(self :: any)._next = head
-	;(self :: any)._prev = false
+;
+	(self :: any)._next = head;
+	(self :: any)._prev = false
 end
 Connection.reconnect = reconnect
 
---$Lime
-local Bindable = {} :: Bindable<...any>
+local Bindable = {} :: Bindable<...any>;
 (Bindable :: any).__index = Bindable
 
-local Event = {} :: Event<...any>
+local Event = {} :: Event<...any>;
 (Event :: any).__index = Event
 
-local Signal = {} :: Signal<...any>
+local Signal = {} :: Signal<...any>;
 (Signal :: any).__index = Signal
 
-local rbxConnect, rbxDisconnect do
+local rbxConnect, rbxDisconnect
+do
 	local bindable = Instance.new("BindableEvent")
 	rbxConnect = bindable.Event.Connect
 	rbxDisconnect = bindable.Event:Connect(function() end).Disconnect
@@ -149,19 +147,6 @@ local function fire<T...>(self, ...)
 	local event = (self :: any).event or self
 	local cn = event._head
 	while cn do
-		-- local thread
-		-- if #freeThreads > 0 then
-		-- 	thread = freeThreads[#freeThreads]
-		-- 	freeThreads[#freeThreads] = nil
-		-- else
-		-- 	thread = coroutine.create(yielder)
-		-- 	coroutine.resume(thread)
-		-- end
-
-		-- task.spawn(thread, cn._fn, thread, ...)
-
-		-- now we spawn in shared threadpool!
-
 		ThreadPool.spawn(cn._fn, ...)
 		cn = cn._next
 	end
@@ -232,5 +217,5 @@ return {
 	Signal = Signal,
 	Event = Event,
 	Bindable = Bindable,
-	createEmitter = createEmitter
+	createEmitter = createEmitter,
 }
