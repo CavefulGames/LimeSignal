@@ -9,6 +9,7 @@
 - 순수 luau 지원이 삭제되었습니다. (로블록스 전용)
 
 ## 설치 (via pesde)
+- 노트: 이 패키지는 `wally`에서 더 이상 업데이트되지 않습니다.
 ```sh
 pesde add caveful_games/limesignal
 ```
