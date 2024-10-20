@@ -1,6 +1,6 @@
 {
     "name": "limesignal",
     "tree": {
-        "$path": "src"
+        "$path": "src/lib.luau"
     }
 }

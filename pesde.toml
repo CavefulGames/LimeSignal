@@ -1,5 +1,5 @@
 name = "caveful_games/limesignal"
-version = "0.1.6"
+version = "0.1.7"
 description = "A fork of LemonSignal with additional features added"
 authors = ["Aspecky", "Sona", "jiwonz"]
 repository = "https://github.com/CavefulGames/LimeSignal"
@@ -12,7 +12,7 @@ includes = [
 
 [target]
 environment = "roblox"
-lib = "src/init.luau"
+lib = "src/lib.luau"
 build_files = ["src"]
 
 [scripts]
@@ -21,3 +21,6 @@ sourcemap_generator = ".pesde/sourcemap_generator.luau"
 
 [indices]
 default = "https://github.com/daimond113/pesde-index"
+
+[dependencies]
+threadpool = { name = "caveful_games/threadpool", version = "^0.1.9" }

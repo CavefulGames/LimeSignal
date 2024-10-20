@@ -5,7 +5,7 @@
 		"ReplicatedStorage": {
 			"$ignoreUnknownInstances": true,
 			"Packages": {
-				"$path": "Packages",
+				"$path": "roblox_packages",
 				"limesignal": {
 					"$path": "default.project.json"
 				}
