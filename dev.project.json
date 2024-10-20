@@ -4,11 +4,11 @@
 		"$className": "DataModel",
 		"ReplicatedStorage": {
 			"$ignoreUnknownInstances": true,
-			"Packages": {
-				"$path": "roblox_packages",
-				"limesignal": {
-					"$path": "default.project.json"
-				}
+			"roblox_packages": {
+				"$path": "roblox_packages"
+			},
+			"limesignal": {
+				"$path": "default.project.json"
 			}
 		},
 		"ServerScriptService": {

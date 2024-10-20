@@ -2,7 +2,7 @@
 --!strict
 --!native
 
-local ThreadPool = require(script.Parent.threadpool)
+local ThreadPool = require(script.Parent.roblox_packages.threadpool)
 
 export type Connection<T...> = {
 	disconnect: (self: Connection<T...>) -> (),
