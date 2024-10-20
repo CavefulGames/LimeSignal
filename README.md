@@ -8,7 +8,7 @@
 - 모든 클래스의 메소드, 속성은 camelCase입니다. 원래 `RBXScriptSignal`과 `Signal` 모듈들의 메소드가 PascalCase였다는 점에서 유의하세요.
 - 순수 luau 지원이 삭제되었습니다. (로블록스 전용)
 
-## 설치 (via Pesde)
+## 설치 (via pesde)
 ```sh
 pesde add caveful_games/limesignal
 ```
