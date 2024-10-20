@@ -1,5 +1,5 @@
 name = "caveful_games/limesignal"
-version = "0.1.8"
+version = "0.1.10"
 description = "A fork of LemonSignal with additional features added"
 authors = ["Aspecky", "Sona", "jiwonz"]
 repository = "https://github.com/CavefulGames/LimeSignal"

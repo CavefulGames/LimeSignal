@@ -1,7 +1,7 @@
 --!strict
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LimeSignal = require(ReplicatedStorage.Packages.LimeSignal)
+local LimeSignal = require(ReplicatedStorage.limesignal.lib)
 
 local emit = LimeSignal.createEmitter()
 local event = LimeSignal.Event.from(emit) :: LimeSignal.Event<number>
