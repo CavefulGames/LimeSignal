@@ -14,7 +14,7 @@
 		"ServerScriptService": {
 			"$ignoreUnknownInstances": true,
 			"tests": {
-				"$path": "tests"
+				"$path": "dev"
 			}
 		}
 	}
