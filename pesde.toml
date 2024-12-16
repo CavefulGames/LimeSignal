@@ -17,11 +17,15 @@ lib = "src/lib.luau"
 build_files = ["src"]
 
 [scripts]
-roblox_sync_config_generator = ".pesde/roblox_sync_config_generator.luau"
-sourcemap_generator = ".pesde/sourcemap_generator.luau"
+roblox_sync_config_generator = ".pesde/scripts/roblox_sync_config_generator.luau"
+sourcemap_generator = ".pesde/scripts/sourcemap_generator.luau"
 
 [indices]
 default = "https://github.com/daimond113/pesde-index"
+
+[dev_dependencies]
+scripts = { name = "pesde/scripts_rojo", version = "^0.1.0", target = "lune" }
+rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
 
 [dependencies]
 threadpool = { name = "caveful_games/threadpool", version = "^0.1.9" }
