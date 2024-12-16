@@ -1,5 +1,5 @@
 name = "caveful_games/limesignal"
-version = "0.1.10"
+version = "0.2.0"
 description = "A fork of LemonSignal with additional features added"
 authors = ["Aspecky", "Sona", "jiwonz"]
 repository = "https://github.com/CavefulGames/LimeSignal"
@@ -7,7 +7,8 @@ license = "MIT"
 includes = [
     "src",
     "LICENSE.md",
-	"README.md"
+	"README.md",
+	"pesde.toml"
 ]
 
 [target]

@@ -1,0 +1,23 @@
+name = "caveful_games/limesignal"
+version = "0.1.10"
+target = "roblox"
+
+[graph."caveful_games/threadpool"."0.1.9 roblox"]
+direct = ["threadpool", { name = "caveful_games/threadpool", version = "^0.1.9" }]
+ty = "standard"
+
+[graph."caveful_games/threadpool"."0.1.9 roblox".target]
+environment = "roblox"
+lib = "lib.luau"
+build_files = ["lib.luau"]
+
+[graph."caveful_games/threadpool"."0.1.9 roblox".pkg_ref]
+ref_ty = "pesde"
+name = "caveful_games/threadpool"
+version = "0.1.9"
+index_url = "https://github.com/daimond113/pesde-index"
+
+[graph."caveful_games/threadpool"."0.1.9 roblox".pkg_ref.target]
+environment = "roblox"
+lib = "lib.luau"
+build_files = ["lib.luau"]

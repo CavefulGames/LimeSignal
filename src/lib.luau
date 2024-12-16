@@ -4,34 +4,158 @@
 
 local ThreadPool = require(script.Parent.Parent.roblox_packages.threadpool)
 
+--[=[
+	A connection object which represents a connected function to an event.
+
+	이벤트에 연결된 함수를 가르키는 오브젝트입니다.
+
+	```luau
+	local connection = event:connect(function() end)
+
+	connection:disconnect() -- Disconnects a connected function from an event.
+
+	assert(connection.connected == true)
+	```
+]=]
 export type Connection<T...> = {
+	__index: Connection<T...>,
+	--[=[
+		Disconnects a connected function from an event.
+
+		연결된 함수를 이벤트로부터 연결을 해제합니다.
+	]=]
 	disconnect: (self: Connection<T...>) -> (),
 	reconnect: (self: Connection<T...>) -> (),
 	connected: boolean,
 }
 
+--[=[
+	An event object that is not intended to be fired externally.
+
+	외부에서 발생시키도록 의도되지 않은 이벤트 객체입니다.
+
+	```luau
+	local emit = limesignal.createEmitter()
+
+	local event = limesignal.Event.from(emit) :: limesignal.Event<number>
+
+	-- you CANNOT do them externally!
+	event:fire(123) -- not ok
+
+	-- you can do them internally!
+	emit(event, 123)
+	```
+]=]
 export type Event<T...> = {
+	__index: Event<T...>,
 	connect: (self: Event<T...>, fn: (T...) -> ()) -> Connection<T...>,
-	connectOnce: (self: Event<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	once: (self: Event<T...>, fn: (T...) -> ()) -> Connection<T...>,
 	disconnectAll: (self: Event<T...>) -> (),
 	wait: (self: Event<T...>) -> T...,
+	--[=[
+		Creates a new `Event` object from `emitter`.
+
+		`emitter`로 부터 새로운 이벤트 오브젝트를 생성합니다.
+	]=]
 	from: (emitter: (event: Event<T...>, T...) -> ()) -> Event<T...>,
 }
 
+--[=[
+	An event object that is intended to not be fired or not to disconnect all connections externally.
+
+	외부에서 발생시키지 못하고 모든 연결을 해제할 수 없게 의도된 이벤트 객체입니다.
+
+	```luau
+	local emit = limesignal.createEmitter()
+	local destroy = limesignal.createDestroyer()
+
+	local event = limesignal.ImmutableEvent.from(emit, destroy) :: limesignal.ImmutableEvent<string>
+
+	-- you CANNOT do them externally!
+	event:fire("hello") -- not ok
+	event:disconnectAll() -- not ok
+
+	-- you can do them internally!
+	emit(event, "hello")
+	destroy(event)
+	```
+]=]
+export type ImmutableEvent<T...> = {
+	__index: ImmutableEvent<T...>,
+	connect: (self: ImmutableEvent<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	once: (self: ImmutableEvent<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	wait: (self: ImmutableEvent<T...>) -> T...,
+	--[=[
+		Creates a new `ImmutableEvent` object from `emitter` and `destroyer`.
+
+		`emitter`와 `destroyer`로 부터 새로운 `ImmutableEvent`를 생성합니다.
+	]=]
+	from: (emitter: (event: ImmutableEvent<T...>, T...) -> (), destroyer: ((event: ImmutableEvent<T...>) -> ())?) -> ImmutableEvent<T...>,
+}
+
+--[=[
+	An event object similar to ROBLOX's `BindableEvent` instance.
+
+	Roblox의 `BindableEvent` 인스턴스와 유사한 이벤트 객체입니다.
+
+	```luau
+	local bindable = limesignal.Bindable.new()
+
+	bindable.event:connect(function()
+		-- code to be run on event fire
+	end)
+
+	bindable:fire()
+	bindable.event:fire() -- not ok
+	```
+]=]
 export type Bindable<T...> = {
+	__index: Bindable<T...>,
+	--[=[
+		Creates a new `Bindable` object.
+
+		새로운 `Bindable` 오브젝트를 생성합니다.
+	]=]
 	new: () -> Bindable<T...>,
 	wrap: (signal: RBXScriptSignal<T...>) -> Bindable<T...>,
 	fire: (self: Bindable<T...>, T...) -> (),
 	Destroy: (self: Bindable<T...>) -> (), -- why PascalCase? because it does call Destroy method on RBXScriptConnection if it exists
 	RBXScriptConnection: RBXScriptConnection?,
-	event: Event<T...>,
+	event: ImmutableEvent<T...>,
 }
 
+--[=[
+	A common signal object.
+
+	일반적인 신호 객체.
+
+	```luau
+	local signal = limesignal.Signal.new() :: limesignal.Signal<>
+
+	signal:connect(function()
+		-- code to be run on event fire
+	end)
+
+	signal:once(function()
+		-- this will be disconnected once fired!
+	end)
+
+	signal:fire()
+	signal:disconnectAll()
+	signal:wait()
+	```
+]=]
 export type Signal<T...> = {
+	__index: Signal<T...>,
+	--[=[
+		Creates a new `Signal` object.
+
+		새로운 시그널 오브젝트를 생성합니다.
+	]=]
 	new: () -> Signal<T...>,
 	wrap: (signal: RBXScriptSignal<T...>) -> Signal<T...>,
 	connect: (self: Signal<T...>, fn: (T...) -> ()) -> Connection<T...>,
-	connectOnce: (self: Signal<T...>, fn: (T...) -> ()) -> Connection<T...>,
+	once: (self: Signal<T...>, fn: (T...) -> ()) -> Connection<T...>,
 	disconnectAll: (self: Signal<T...>) -> (),
 	wait: (self: Signal<T...>) -> T...,
 	fire: (self: Signal<T...>, T...) -> (),
@@ -39,8 +163,11 @@ export type Signal<T...> = {
 	RBXScriptConnection: RBXScriptConnection?,
 }
 
-local Connection = {} :: Connection<...any>;
-(Connection :: any).__index = Connection
+local emitterKey = function() end
+local destroyerKey = function() end
+
+local Connection = {} :: Connection<...any>
+Connection.__index = Connection
 
 local function disconnect(self)
 	if not self.connected then
@@ -83,14 +210,17 @@ function reconnect(self)
 end
 Connection.reconnect = reconnect
 
-local Bindable = {} :: Bindable<...any>;
-(Bindable :: any).__index = Bindable
+local Bindable = {} :: Bindable<...any>
+Bindable.__index = Bindable
 
-local Event = {} :: Event<...any>;
-(Event :: any).__index = Event
+local Event = {} :: Event<...any>
+Event.__index = Event
 
-local Signal = {} :: Signal<...any>;
-(Signal :: any).__index = Signal
+local ImmutableEvent = {} :: ImmutableEvent<...any>
+ImmutableEvent.__index = ImmutableEvent
+
+local Signal = {} :: Signal<...any>
+Signal.__index = Signal
 
 local rbxConnect, rbxDisconnect
 do
@@ -119,6 +249,7 @@ local function connect<T...>(self, fn)
 end
 Signal.connect = connect
 Event.connect = connect :: any
+ImmutableEvent.connect = connect :: any
 
 local function once<T...>(self, fn)
 	local cn
@@ -128,8 +259,9 @@ local function once<T...>(self, fn)
 	end)
 	return cn
 end
-Signal.connectOnce = once
-Event.connectOnce = once :: any
+Signal.once = once
+Event.once = once :: any
+ImmutableEvent.once = once :: any
 
 local function wait<T...>(self): T...
 	local thread = coroutine.running()
@@ -142,6 +274,7 @@ local function wait<T...>(self): T...
 end
 Signal.wait = wait
 Event.wait = wait :: any
+ImmutableEvent.wait = wait :: any
 
 local function fire<T...>(self, ...)
 	local event = (self :: any).event or self
@@ -162,6 +295,7 @@ local function disconnectAll<T...>(self)
 	end
 end
 Event.disconnectAll = disconnectAll
+Signal.disconnectAll = disconnectAll :: any
 
 local function Destroy<T...>(self)
 	disconnectAll((self :: any).event or self)
@@ -175,11 +309,15 @@ Signal.Destroy = Destroy
 Bindable.Destroy = Destroy :: any
 
 function Event.from(emitter)
-	return setmetatable({ _emitter = emitter, _head = false }, Event) :: any
+	return setmetatable({ [emitterKey] = emitter, _head = false }, Event) :: any
+end
+
+function ImmutableEvent.from(emitter, destroyer)
+	return setmetatable({ [emitterKey] = emitter, [destroyerKey] = destroyer :: any, _head = false }, ImmutableEvent) :: any
 end
 
 function Bindable.new()
-	local event = setmetatable({ _head = false }, Event)
+	local event = setmetatable({ _head = false }, ImmutableEvent)
 	return setmetatable({ event = event }, Bindable) :: any
 end
 
@@ -203,14 +341,26 @@ function Signal.wrap(signal)
 	return wrapper
 end
 
-local function createEmitter(): <T...>(event: Event<T...>, T...) -> ()
+local function createEmitter(): <T...>(event: Event<T...> | ImmutableEvent<T...>, T...) -> ()
 	local function emitter(event, ...)
-		if not event._emitter or event._emitter ~= emitter then
-			error("Emitted an invalid event")
+		local eventEmitter = event[emitterKey]
+		if not eventEmitter or eventEmitter ~= emitter then
+			error("Attempt to emit a wrong event (emitter did not match)")
 		end
 		fire(event, ...)
 	end
 	return emitter :: any
+end
+
+local function createDestroyer(): <T...>(event: ImmutableEvent<T...>) -> ()
+	local function destroyer(event)
+		local eventDestroyer = event[destroyerKey]
+		if not eventDestroyer or eventDestroyer ~= destroyer then
+			error("Attempt to emit a wrong event (emitter did not match)")
+		end
+		disconnectAll(event)
+	end
+	return destroyer :: any
 end
 
 return {
@@ -218,4 +368,5 @@ return {
 	Event = Event,
 	Bindable = Bindable,
 	createEmitter = createEmitter,
+	createDestroyer = createDestroyer
 }
