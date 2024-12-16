@@ -90,7 +90,10 @@ export type ImmutableEvent<T...> = {
 
 		`emitter`와 `destroyer`로 부터 새로운 `ImmutableEvent`를 생성합니다.
 	]=]
-	from: (emitter: (event: ImmutableEvent<T...>, T...) -> (), destroyer: ((event: ImmutableEvent<T...>) -> ())?) -> ImmutableEvent<T...>,
+	from: (
+		emitter: (event: ImmutableEvent<T...>, T...) -> (),
+		destroyer: ((event: ImmutableEvent<T...>) -> ())?
+	) -> ImmutableEvent<T...>,
 }
 
 --[=[
@@ -203,8 +206,7 @@ function reconnect(self)
 	if head then
 		head._prev = self
 	end
-	signal._head = self
-;
+	signal._head = self;
 	(self :: any)._next = head;
 	(self :: any)._prev = false
 end
@@ -313,7 +315,10 @@ function Event.from(emitter)
 end
 
 function ImmutableEvent.from(emitter, destroyer)
-	return setmetatable({ [emitterKey] = emitter, [destroyerKey] = destroyer :: any, _head = false }, ImmutableEvent) :: any
+	return setmetatable(
+			{ [emitterKey] = emitter, [destroyerKey] = destroyer :: any, _head = false },
+			ImmutableEvent
+		) :: any
 end
 
 function Bindable.new()
@@ -368,5 +373,5 @@ return {
 	Event = Event,
 	Bindable = Bindable,
 	createEmitter = createEmitter,
-	createDestroyer = createDestroyer
+	createDestroyer = createDestroyer,
 }
